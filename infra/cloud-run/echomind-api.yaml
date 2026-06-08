@@ -1,0 +1,53 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: echomind-api
+  annotations:
+    run.googleapis.com/ingress: all
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "2"
+        autoscaling.knative.dev/maxScale: "100"
+        run.googleapis.com/concurrency: "1"
+        run.googleapis.com/cpu-throttling: "true"
+        run.googleapis.com/vpc-access-connector: "serverless-vpc-connector"
+        run.googleapis.com/vpc-access-egress: "all-traffic"
+        run.googleapis.com/execution-environment: "gen2"
+    spec:
+      containerConcurrency: 1
+      timeoutSeconds: 300
+      serviceAccountName: echomind-api-sa@echomind-prod.iam.gserviceaccount.com
+      containers:
+      - name: api
+        image: gcr.io/echomind-prod/echomind-api:latest
+        ports:
+        - name: http1
+          containerPort: 8080
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PROJECT_ID
+          value: "echomind-prod"
+        - name: REGION
+          value: "us-central1"
+        - name: MONGO_URI
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-connection-string
+              key: latest
+        - name: ELASTIC_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: elastic-api-key
+              key: latest
+        - name: FIREBASE_CONFIG
+          valueFrom:
+            secretKeyRef:
+              name: firebase-config
+              key: latest
+        resources:
+          limits:
+            cpu: "1"
+            memory: "2Gi"

@@ -1,0 +1,111 @@
+apiVersion: cloudscheduler/v1
+kind: Job
+metadata:
+  name: oracle-6hr
+spec:
+  schedule: "0 */6 * * *"
+  timeZone: "UTC"
+  description: "Trigger Oracle prediction cycle every 6 hours"
+  pubsubTarget:
+    topicName: projects/echomind-prod/topics/echomind-orchestrator
+    data: eyJhY3Rpb24iOiJvcnFjbGVfcHJlZGljdCJ9  # base64 {"action":"oracle_predict"}
+    attributes:
+      agent_type: "oracle"
+      source_agent: "scheduler"
+      priority: "normal"
+---
+apiVersion: cloudscheduler/v1
+kind: Job
+metadata:
+  name: hunter-weekly
+spec:
+  schedule: "0 0 * * 1"
+  timeZone: "UTC"
+  description: "Trigger brand hunter weekly scan"
+  pubsubTarget:
+    topicName: projects/echomind-prod/topics/echomind-orchestrator
+    data: eyJhY3Rpb24iOiJodW50X2JyYW5kcyJ9
+    attributes:
+      agent_type: "hunter"
+      source_agent: "scheduler"
+      priority: "normal"
+---
+apiVersion: cloudscheduler/v1
+kind: Job
+metadata:
+  name: negotiator-2hr
+spec:
+  schedule: "0 */2 * * *"
+  timeZone: "UTC"
+  description: "Poll for brand replies and negotiate every 2 hours"
+  pubsubTarget:
+    topicName: projects/echomind-prod/topics/echomind-orchestrator
+    data: eyJhY3Rpb24iOiJuZWdvdGlhdGVfZGVhbHMifQ==
+    attributes:
+      agent_type: "negotiator"
+      source_agent: "scheduler"
+      priority: "normal"
+---
+apiVersion: cloudscheduler/v1
+kind: Job
+metadata:
+  name: presence-12hr
+spec:
+  schedule: "0 */12 * * *"
+  timeZone: "UTC"
+  description: "Publish agent presence to echomind_network every 12 hours"
+  pubsubTarget:
+    topicName: projects/echomind-prod/topics/echomind-orchestrator
+    data: eyJhY3Rpb24iOiJwdWJsaXNoX3ByZXNlbmNlIn0=
+    attributes:
+      agent_type: "presence"
+      source_agent: "scheduler"
+      priority: "normal"
+---
+apiVersion: cloudscheduler/v1
+kind: Job
+metadata:
+  name: discovery-12hr
+spec:
+  schedule: "0 */12 * * *"
+  timeZone: "UTC"
+  description: "Discover peer agents for collaboration every 12 hours"
+  pubsubTarget:
+    topicName: projects/echomind-prod/topics/echomind-orchestrator
+    data: eyJhY3Rpb24iOiJkaXNjb3Zlcl9hZ2VudHMifQ==
+    attributes:
+      agent_type: "discovery"
+      source_agent: "scheduler"
+      priority: "normal"
+---
+apiVersion: cloudscheduler/v1
+kind: Job
+metadata:
+  name: digest-daily
+spec:
+  schedule: "0 8 * * *"
+  timeZone: "UTC"
+  description: "Daily digest notification to creators at 08:00 UTC"
+  pubsubTarget:
+    topicName: projects/echomind-prod/topics/echomind-orchestrator
+    data: eyJhY3Rpb24iOiJnZW5lcmF0ZV9kaWdlc3QifQ==
+    attributes:
+      agent_type: "digest"
+      source_agent: "scheduler"
+      priority: "normal"
+---
+apiVersion: cloudscheduler/v1
+kind: Job
+metadata:
+  name: dlq-scan-hourly
+spec:
+  schedule: "0 * * * *"
+  timeZone: "UTC"
+  description: "Scan DLQ and retry transient failures hourly"
+  pubsubTarget:
+    topicName: projects/echomind-prod/topics/echomind-dlq
+    data: eyJhY3Rpb24iOiJzY2FuX2RscSJ9
+    attributes:
+      agent_type: "dlq"
+      source_agent: "scheduler"
+      priority: "urgent"

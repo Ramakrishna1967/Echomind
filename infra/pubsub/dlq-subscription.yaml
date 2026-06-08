@@ -1,0 +1,14 @@
+apiVersion: pubsub/v1
+kind: Subscription
+metadata:
+  name: dlq-processor-subscription
+spec:
+  topic: echomind-dlq
+  ackDeadlineSeconds: 600
+  filter: 'attributes.retry_count < "5"'
+  retryPolicy:
+    minimumBackoff: 30s
+    maximumBackoff: 600s
+  labels:
+    app: echomind
+    agent: dlq

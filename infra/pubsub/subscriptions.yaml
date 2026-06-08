@@ -1,0 +1,198 @@
+apiVersion: pubsub/v1
+kind: Subscription
+metadata:
+  name: oracle-subscription
+spec:
+  topic: echomind-orchestrator
+  ackDeadlineSeconds: 600
+  messageRetentionDuration: 86400s
+  filter: 'attributes.agent_type = "oracle" AND attributes.creator_id != ""'
+  retryPolicy:
+    minimumBackoff: 10s
+    maximumBackoff: 600s
+  deadLetterPolicy:
+    deadLetterTopic: projects/echomind-prod/topics/echomind-dlq
+    maxDeliveryAttempts: 5
+  labels:
+    app: echomind
+    agent: oracle
+---
+apiVersion: pubsub/v1
+kind: Subscription
+metadata:
+  name: hunter-subscription
+spec:
+  topic: echomind-orchestrator
+  ackDeadlineSeconds: 600
+  messageRetentionDuration: 86400s
+  filter: 'attributes.agent_type = "hunter" AND attributes.creator_id != ""'
+  retryPolicy:
+    minimumBackoff: 10s
+    maximumBackoff: 600s
+  deadLetterPolicy:
+    deadLetterTopic: projects/echomind-prod/topics/echomind-dlq
+    maxDeliveryAttempts: 5
+  labels:
+    app: echomind
+    agent: hunter
+---
+apiVersion: pubsub/v1
+kind: Subscription
+metadata:
+  name: pitcher-subscription
+spec:
+  topic: echomind-orchestrator
+  ackDeadlineSeconds: 600
+  messageRetentionDuration: 86400s
+  filter: 'attributes.agent_type = "pitcher" AND attributes.creator_id != ""'
+  retryPolicy:
+    minimumBackoff: 10s
+    maximumBackoff: 600s
+  deadLetterPolicy:
+    deadLetterTopic: projects/echomind-prod/topics/echomind-dlq
+    maxDeliveryAttempts: 5
+  labels:
+    app: echomind
+    agent: pitcher
+---
+apiVersion: pubsub/v1
+kind: Subscription
+metadata:
+  name: negotiator-subscription
+spec:
+  topic: echomind-orchestrator
+  ackDeadlineSeconds: 600
+  messageRetentionDuration: 86400s
+  filter: 'attributes.agent_type = "negotiator" AND attributes.creator_id != ""'
+  retryPolicy:
+    minimumBackoff: 10s
+    maximumBackoff: 600s
+  deadLetterPolicy:
+    deadLetterTopic: projects/echomind-prod/topics/echomind-dlq
+    maxDeliveryAttempts: 5
+  labels:
+    app: echomind
+    agent: negotiator
+---
+apiVersion: pubsub/v1
+kind: Subscription
+metadata:
+  name: closer-subscription
+spec:
+  topic: echomind-orchestrator
+  ackDeadlineSeconds: 600
+  messageRetentionDuration: 86400s
+  filter: 'attributes.agent_type = "closer" AND attributes.creator_id != ""'
+  retryPolicy:
+    minimumBackoff: 10s
+    maximumBackoff: 600s
+  deadLetterPolicy:
+    deadLetterTopic: projects/echomind-prod/topics/echomind-dlq
+    maxDeliveryAttempts: 5
+  labels:
+    app: echomind
+    agent: closer
+---
+apiVersion: pubsub/v1
+kind: Subscription
+metadata:
+  name: collab-subscription
+spec:
+  topic: echomind-orchestrator
+  ackDeadlineSeconds: 600
+  messageRetentionDuration: 86400s
+  filter: 'attributes.agent_type = "collab" AND attributes.creator_id != ""'
+  retryPolicy:
+    minimumBackoff: 10s
+    maximumBackoff: 600s
+  deadLetterPolicy:
+    deadLetterTopic: projects/echomind-prod/topics/echomind-dlq
+    maxDeliveryAttempts: 5
+  labels:
+    app: echomind
+    agent: collab
+---
+apiVersion: pubsub/v1
+kind: Subscription
+metadata:
+  name: graph-subscription
+spec:
+  topic: echomind-orchestrator
+  ackDeadlineSeconds: 600
+  messageRetentionDuration: 86400s
+  filter: 'attributes.agent_type = "graph" AND attributes.creator_id != ""'
+  retryPolicy:
+    minimumBackoff: 10s
+    maximumBackoff: 600s
+  deadLetterPolicy:
+    deadLetterTopic: projects/echomind-prod/topics/echomind-dlq
+    maxDeliveryAttempts: 5
+  labels:
+    app: echomind
+    agent: graph
+---
+apiVersion: pubsub/v1
+kind: Subscription
+metadata:
+  name: presence-subscription
+spec:
+  topic: echomind-orchestrator
+  ackDeadlineSeconds: 600
+  messageRetentionDuration: 86400s
+  filter: 'attributes.agent_type = "presence" AND attributes.creator_id != ""'
+  retryPolicy:
+    minimumBackoff: 10s
+    maximumBackoff: 600s
+  deadLetterPolicy:
+    deadLetterTopic: projects/echomind-prod/topics/echomind-dlq
+    maxDeliveryAttempts: 5
+  labels:
+    app: echomind
+    agent: presence
+---
+apiVersion: pubsub/v1
+kind: Subscription
+metadata:
+  name: discovery-subscription
+spec:
+  topic: echomind-orchestrator
+  ackDeadlineSeconds: 600
+  messageRetentionDuration: 86400s
+  filter: 'attributes.agent_type = "discovery" AND attributes.creator_id != ""'
+  retryPolicy:
+    minimumBackoff: 10s
+    maximumBackoff: 600s
+  deadLetterPolicy:
+    deadLetterTopic: projects/echomind-prod/topics/echomind-dlq
+    maxDeliveryAttempts: 5
+  labels:
+    app: echomind
+    agent: discovery
+---
+apiVersion: pubsub/v1
+kind: Subscription
+metadata:
+  name: digest-subscription
+spec:
+  topic: echomind-orchestrator
+  ackDeadlineSeconds: 600
+  messageRetentionDuration: 86400s
+  filter: 'attributes.agent_type = "digest" AND attributes.creator_id != ""'
+  retryPolicy:
+    minimumBackoff: 10s
+    maximumBackoff: 600s
+  deadLetterPolicy:
+    deadLetterTopic: projects/echomind-prod/topics/echomind-dlq
+    maxDeliveryAttempts: 5
+  labels:
+    app: echomind
+    agent: digest
+---
+apiVersion: pubsub/v1
+kind: Subscription
+metadata:
+  name: dlq-retry-subscription
+spec:
+  topic: echomind-dlq
+  ackDeadlineSeconds: 600
+  filter: 'attributes.retry_count < "5"'

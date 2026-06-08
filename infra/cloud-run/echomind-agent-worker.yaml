@@ -1,0 +1,68 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: echomind-agent-worker
+  annotations:
+    run.googleapis.com/ingress: internal-and-cloud-load-balancing
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "1"
+        autoscaling.knative.dev/maxScale: "1000"
+        run.googleapis.com/concurrency: "1"
+        run.googleapis.com/cpu-throttling: "false"
+        run.googleapis.com/vpc-access-connector: "serverless-vpc-connector"
+        run.googleapis.com/vpc-access-egress: "all-traffic"
+        run.googleapis.com/execution-environment: "gen2"
+    spec:
+      containerConcurrency: 1
+      timeoutSeconds: 3600
+      serviceAccountName: echomind-agent-sa@echomind-prod.iam.gserviceaccount.com
+      containers:
+      - name: agent-worker
+        image: gcr.io/echomind-prod/echomind-agent-worker:latest
+        ports:
+        - name: http1
+          containerPort: 8080
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PROJECT_ID
+          value: "echomind-prod"
+        - name: REGION
+          value: "us-central1"
+        - name: MONGO_URI
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-connection-string
+              key: latest
+        - name: ELASTIC_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: elastic-api-key
+              key: latest
+        - name: ARIZE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: arize-api-key
+              key: latest
+        - name: GITLAB_ACCESS_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: gitlab-access-token
+              key: latest
+        - name: DYNATRACE_API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: dynatrace-api-token
+              key: latest
+        - name: AGENT_ED25519_KEYPAIR
+          valueFrom:
+            secretKeyRef:
+              name: agent-ed25519-keypair
+              key: latest
+        resources:
+          limits:
+            cpu: "2"
+            memory: "4Gi"

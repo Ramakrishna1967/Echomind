@@ -1,0 +1,89 @@
+# .gitlab-ci.yml for echomind-sovereign
+# Phases: test → build → deploy-staging → integration-test → deploy-prod (manual)
+
+stages:
+  - test
+  - build
+  - deploy-staging
+  - integration-test
+  - deploy-prod
+
+variables:
+  GCP_PROJECT_PROD: echomind-prod
+  GCP_PROJECT_STAGING: echomind-staging
+  GCP_REGION: us-central1
+  DOCKER_REGISTRY: gcr.io
+  NODE_VERSION: "22"
+
+default:
+  image: node:22-alpine
+  before_script:
+    - npm ci --legacy-peer-deps
+
+test:
+  stage: test
+  script:
+    - npm run typecheck
+    - npm test
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+    - if: $CI_COMMIT_BRANCH == "main"
+
+build:
+  stage: build
+  image: docker:24
+  services:
+    - docker:24-dind
+  script:
+    - docker build -t $DOCKER_REGISTRY/$GCP_PROJECT_PROD/echomind-agent-worker:$CI_COMMIT_SHA -f Dockerfile.agent .
+    - docker build -t $DOCKER_REGISTRY/$GCP_PROJECT_PROD/echomind-graph-worker:$CI_COMMIT_SHA -f Dockerfile.graph .
+    - docker build -t $DOCKER_REGISTRY/$GCP_PROJECT_PROD/echomind-api:$CI_COMMIT_SHA -f Dockerfile.api .
+    - docker build -t $DOCKER_REGISTRY/$GCP_PROJECT_PROD/echomind-kill-switch:$CI_COMMIT_SHA -f Dockerfile.killswitch .
+    - docker push $DOCKER_REGISTRY/$GCP_PROJECT_PROD/echomind-agent-worker:$CI_COMMIT_SHA
+    - docker push $DOCKER_REGISTRY/$GCP_PROJECT_PROD/echomind-graph-worker:$CI_COMMIT_SHA
+    - docker push $DOCKER_REGISTRY/$GCP_PROJECT_PROD/echomind-api:$CI_COMMIT_SHA
+    - docker push $DOCKER_REGISTRY/$GCP_PROJECT_PROD/echomind-kill-switch:$CI_COMMIT_SHA
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+
+deploy-staging:
+  stage: deploy-staging
+  image: google/cloud-sdk:alpine
+  script:
+    - gcloud auth activate-service-account --key-file $GCP_SA_KEY_STAGING
+    - gcloud config set project $GCP_PROJECT_STAGING
+    - gcloud run deploy echomind-agent-worker --image $DOCKER_REGISTRY/$GCP_PROJECT_PROD/echomind-agent-worker:$CI_COMMIT_SHA --region $GCP_REGION --project $GCP_PROJECT_STAGING --platform managed --concurrency 1 --min-instances 1 --max-instances 1000
+    - gcloud run deploy echomind-graph-worker --image $DOCKER_REGISTRY/$GCP_PROJECT_PROD/echomind-graph-worker:$CI_COMMIT_SHA --region $GCP_REGION --project $GCP_PROJECT_STAGING --platform managed --concurrency 1 --min-instances 1 --max-instances 100
+    - gcloud run deploy echomind-api --image $DOCKER_REGISTRY/$GCP_PROJECT_PROD/echomind-api:$CI_COMMIT_SHA --region $GCP_REGION --project $GCP_PROJECT_STAGING --platform managed --concurrency 1 --min-instances 2 --max-instances 100
+    - gcloud run deploy echomind-kill-switch --image $DOCKER_REGISTRY/$GCP_PROJECT_PROD/echomind-kill-switch:$CI_COMMIT_SHA --region $GCP_REGION --project $GCP_PROJECT_STAGING --platform managed --concurrency 1 --min-instances 1 --max-instances 10
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+  environment:
+    name: staging
+    url: https://staging.echomind.ai
+
+integration-test:
+  stage: integration-test
+  script:
+    - npm run test:integration -- --env=staging
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+  dependencies:
+    - deploy-staging
+
+deploy-prod:
+  stage: deploy-prod
+  image: google/cloud-sdk:alpine
+  script:
+    - gcloud auth activate-service-account --key-file $GCP_SA_KEY_PROD
+    - gcloud config set project $GCP_PROJECT_PROD
+    - gcloud run deploy echomind-agent-worker --image $DOCKER_REGISTRY/$GCP_PROJECT_PROD/echomind-agent-worker:$CI_COMMIT_SHA --region $GCP_REGION --project $GCP_PROJECT_PROD --platform managed --concurrency 1 --min-instances 1 --max-instances 1000
+    - gcloud run deploy echomind-graph-worker --image $DOCKER_REGISTRY/$GCP_PROJECT_PROD/echomind-graph-worker:$CI_COMMIT_SHA --region $GCP_REGION --project $GCP_PROJECT_PROD --platform managed --concurrency 1 --min-instances 1 --max-instances 100
+    - gcloud run deploy echomind-api --image $DOCKER_REGISTRY/$GCP_PROJECT_PROD/echomind-api:$CI_COMMIT_SHA --region $GCP_REGION --project $GCP_PROJECT_PROD --platform managed --concurrency 1 --min-instances 2 --max-instances 100
+    - gcloud run deploy echomind-kill-switch --image $DOCKER_REGISTRY/$GCP_PROJECT_PROD/echomind-kill-switch:$CI_COMMIT_SHA --region $GCP_REGION --project $GCP_PROJECT_PROD --platform managed --concurrency 1 --min-instances 1 --max-instances 10
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+  when: manual
+  environment:
+    name: production
+    url: https://echomind.ai

@@ -1,0 +1,48 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: echomind-kill-switch
+  annotations:
+    run.googleapis.com/ingress: all
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "1"
+        autoscaling.knative.dev/maxScale: "10"
+        run.googleapis.com/concurrency: "1"
+        run.googleapis.com/cpu-throttling: "false"
+        run.googleapis.com/vpc-access-connector: "serverless-vpc-connector"
+        run.googleapis.com/vpc-access-egress: "all-traffic"
+        run.googleapis.com/execution-environment: "gen2"
+    spec:
+      containerConcurrency: 1
+      timeoutSeconds: 60
+      serviceAccountName: echomind-killswitch-sa@echomind-prod.iam.gserviceaccount.com
+      containers:
+      - name: kill-switch
+        image: gcr.io/echomind-prod/echomind-kill-switch:latest
+        ports:
+        - name: http1
+          containerPort: 8080
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PROJECT_ID
+          value: "echomind-prod"
+        - name: REGION
+          value: "us-central1"
+        - name: MONGO_URI
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-connection-string
+              key: latest
+        - name: DYNATRACE_API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: dynatrace-api-token
+              key: latest
+        resources:
+          limits:
+            cpu: "1"
+            memory: "512Mi"

@@ -1,0 +1,28 @@
+apiVersion: pubsub/v1
+kind: Topic
+metadata:
+  name: echomind-orchestrator
+spec:
+  labels:
+    app: echomind
+    env: prod
+  messageRetentionDuration: 86400s  # 1 day
+---
+apiVersion: pubsub/v1
+kind: Topic
+metadata:
+  name: echomind-dlq
+spec:
+  labels:
+    app: echomind
+    env: prod
+  messageRetentionDuration: 604800s  # 7 days
+---
+apiVersion: pubsub/v1
+kind: Topic
+metadata:
+  name: echomind-events
+spec:
+  labels:
+    app: echomind
+    env: prod
