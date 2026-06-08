@@ -476,11 +476,11 @@ erDiagram
 flowchart LR
     A["git push\nmain branch"] --> B["test\nnpm test\n(Jest)"]
     B -->|"pass"| C["build\ndocker build\n+ push GCR"]
-    B -->|"fail"| X["❌ blocked"]
+    B -->|"fail"| X[" blocked"]
     C --> D["deploy-staging\ngcloud run deploy\nechomind-staging"]
     D --> E["integration-test\nnpm run test:integration\n--env=staging"]
-    E -->|"pass"| F["deploy-prod\n⚠️ MANUAL GATE\nhuman approval"]
-    E -->|"fail"| Y["❌ blocked"]
+    E -->|"pass"| F["deploy-prod\n MANUAL GATE\nhuman approval"]
+    E -->|"fail"| Y[" blocked"]
     F --> G["Production\nechomind-prod"]
 
     style F fill:#2e1a0d,color:#fff
