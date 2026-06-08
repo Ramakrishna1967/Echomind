@@ -1,7 +1,8 @@
 # EchoMind 
 
-> **The world's first fully autonomous AI creator operating system.**
-> Ingests your entire digital existence. Posts as you. Closes brand deals. Negotiates collaborations. While you sleep.
+An autonomous AI creator operating system. Ingests your entire digital existence. Posts as you. Closes brand deals. Negotiates collaborations. While you sleep.
+
+
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8_strict-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![Node](https://img.shields.io/badge/Node-22-339933?style=flat-square&logo=node.js)](https://nodejs.org/)
