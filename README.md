@@ -621,6 +621,5 @@ Echomind/
 ---
 
 <div align="center">
-  <strong>EchoMind Sovereign</strong><br/>
-  Built by Rama Krishna · Powered by Grok Build + OpenCode
+  <strong>EchoMind </strong><br/>
 </div>
